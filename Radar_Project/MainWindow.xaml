@@ -1,0 +1,131 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Radar_Project"
+        xmlns:controls="clr-namespace:Radar_Project.Controls" x:Class="Radar_Project.MainWindow"               
+        mc:Ignorable="d" FontFamily="Pyidaungsu" FontSize="15"
+        
+        Title="NANO Radar GUI" Height="620" Width="1000" Background="Black" Closed="Window_Closed" WindowState="Maximized" ResizeMode="CanMinimize">
+    <Window.Resources>
+        <controls:Converter x:Key="converter" />
+        <controls:InverseBooleanConverter x:Key="inverseConveter" />
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="400"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+        <controls:RadarControl x:Name="radarControl" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="25" />
+
+        <ListView x:Name="targetsListView" Grid.Row="0" Grid.Column="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding Path=ID,Mode=OneWay}" Width="50" />
+                    <GridViewColumn Header="Distance" DisplayMemberBinding="{Binding Path=Distance, StringFormat='{}{0} m'}"  Width="100"/>
+                    <GridViewColumn Header="Azimuth" DisplayMemberBinding="{Binding Path=Azimuth,StringFormat='{}{0} °'}" Width="100"/>
+                    <GridViewColumn Header="Velocity" DisplayMemberBinding="{Binding Path=Speed,StringFormat='{}{0} m/s'}" Width="100"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+
+        <Grid x:Name="controlBox" Grid.Row="1" Grid.Column="1" Background="AliceBlue"  >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="43*"/>
+                <ColumnDefinition Width="37*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+
+
+            <GroupBox Header="Choice Mode" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" HorizontalAlignment="Left" Margin="5,5,0,5" Width="260" Height="80">
+                <StackPanel Orientation="Horizontal" Margin="0,5" >
+                    <RadioButton x:Name="rbtn_one" Content="Radar Mode" Margin="5" IsChecked="True" Checked="choiceMode_Changed"/>
+                    <RadioButton x:Name="rbtn_two" Content="Simulation Mode" Margin="5" Checked="choiceMode_Changed" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox x:Name="PPIControl" Header="PPI Control" Grid.Row="1" Grid.RowSpan="2" BorderBrush="Black" Margin="5,5,2,5" >
+                <Grid Margin="5,5,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition  Height="40"/>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Label Content="Range(m)" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                    <Label Content="North Offset(°)" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbRange" Grid.Row="0" Grid.Column="1" SelectedIndex="1" Height="25" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="50"/>
+                        <ComboBoxItem Content="100"/>
+                        <ComboBoxItem Content="200"/>
+                        <ComboBoxItem Content="300"/>
+                        <ComboBoxItem Content="400"/>
+                        <ComboBoxItem Content="500"/>
+                    </ComboBox>
+                    <TextBox x:Name="txtboxNorth" Grid.Row="1" Grid.Column="1" Text="0" Padding="5" Height="30" VerticalContentAlignment="Center" />
+                    <Button x:Name="btnSet" Grid.Row="2" Grid.Column="1" Content="Set" HorizontalAlignment="Right" Width="65"  Height="25" Click="btnSet_Click" />
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="simMode" Header="Simulation Mode" Grid.Column="1" Grid.Row="1" BorderBrush="Black" Margin="5,5,5,0" Height="80" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" >
+                    <Button x:Name="btnSimStart" Content="Start" Width="65" Height="25" Margin="10,5,5,5" Click="btnSimStart_Click"/>
+                    <Button x:Name="btnSimStop" Content="Stop" Width="65" Height="25" Margin="5" Click="btnSimStop_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox x:Name="radarMode" Header="Radar Mode" Grid.Column="1" Grid.Row="2" BorderBrush="Black" Margin="5,0,5,5" Height="80" VerticalAlignment="Bottom">
+                <StackPanel Orientation="Horizontal" >
+                    <Button x:Name="btnRadarStart" Content="Start" Width="65" Height="25" Margin="10,5,5,5" Click="btnRadarStart_Click" IsEnabled="{Binding ElementName=radarControl,Path=Online,Converter={StaticResource inverseConveter}}" />
+                    <Button x:Name="btnRadarStop" Content="Stop" Width="65" Height="25" Margin="5"  Click="btnRadarStop_Click" IsEnabled="{Binding ElementName=radarControl,Path=Online}"/>
+
+
+                </StackPanel>
+            </GroupBox>
+
+            <TextBlock x:Name="radarStatus" Text="{Binding ElementName=radarControl, Path=Online, StringFormat='Radar is {0}',Converter={StaticResource converter}}" Grid.Column="0" 
+                       TextBlock.FontStyle="Italic" TextBlock.FontWeight="Bold" Grid.Row="3" Margin="5,0" Padding="10">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=radarControl, Path=Online}" Value="False">
+                                <Setter Property="Foreground" Value="Red"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=radarControl,Path=Online}" Value="True">
+                                <Setter Property="Foreground" Value="Green"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+
+
+        </Grid>
+    </Grid>
+</Window>
